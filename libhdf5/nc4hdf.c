@@ -996,15 +996,17 @@ var_create_dataset(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, nc_bool_t write_dimid
    /* Set per-var chunk cache, for chunked datasets. */
    if (!var->contiguous && var->chunk_cache_size)
       if (H5Pset_chunk_cache(access_plistid, var->chunk_cache_nelems,
-                             var->chunk_cache_size, var->chunk_cache_preemption) < 0)
+                             var->chunk_cache_size,
+                             var->chunk_cache_preemption) < 0)
          BAIL(NC_EHDFERR);
 
    /* At long last, create the dataset. */
    name_to_use = var->hdf5_name ? var->hdf5_name : var->hdr.name;
    LOG((4, "%s: about to H5Dcreate2 dataset %s of type 0x%x", __func__,
         name_to_use, typeid));
-   if ((hdf5_var->hdf_datasetid = H5Dcreate2(hdf5_grp->hdf_grpid, name_to_use, typeid,
-                                             spaceid, H5P_DEFAULT, plistid, access_plistid)) < 0)
+   if ((hdf5_var->hdf_datasetid = H5Dcreate2(hdf5_grp->hdf_grpid, name_to_use,
+                                             typeid, spaceid, H5P_DEFAULT,
+                                             plistid, access_plistid)) < 0)
       BAIL(NC_EHDFERR);
    var->created = NC_TRUE;
    var->is_new_var = NC_FALSE;
@@ -1012,7 +1014,7 @@ var_create_dataset(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, nc_bool_t write_dimid
    /* Always write the hidden coordinates attribute, which lists the
     * dimids of this var. When present, this speeds opens. When no
     * present, dimscale matching is used. */
-   if (var->ndims > 1)
+   if (var->ndims)
        if ((retval = write_coord_dimids(var)))
            BAIL(retval);
 
@@ -1024,15 +1026,10 @@ var_create_dataset(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, nc_bool_t write_dimid
       if (H5DSset_scale(hdf5_var->hdf_datasetid, var->hdr.name) < 0)
          BAIL(NC_EHDFERR);
 
-      /* If this is a multidimensional coordinate variable, write a
-       * coordinates attribute. */
-      /* if (var->ndims > 1) */
-      /*    if ((retval = write_coord_dimids(var))) */
-      /*       BAIL(retval); */
-
-      /* If desired, write the netCDF dimid. */
+      /* If desired, write the netCDF dimid in a hidden attribute. */
       if (write_dimid)
-         if ((retval = write_netcdf4_dimid(hdf5_var->hdf_datasetid, var->dimids[0])))
+         if ((retval = write_netcdf4_dimid(hdf5_var->hdf_datasetid,
+                                           var->dimids[0])))
             BAIL(retval);
    }
 
