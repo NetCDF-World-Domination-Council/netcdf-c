@@ -117,12 +117,13 @@ rec_reattach_scales(NC_GRP_INFO_T *grp, int dimid, hid_t dimscaleid)
 }
 
 /**
- * @internal This function is needed to handle one special case: what
- * if the user defines a dim, writes metadata, then goes back into
- * define mode and adds a coordinate var for the already existing
- * dim. In that case, I need to recreate the dim's dimension scale
- * dataset, and then I need to go to every var in the file which uses
- * that dimension, and attach the new dimension scale.
+ * @internal This function is needed to handle some special cases:
+ * what if the user defines a dim, writes metadata, then goes back
+ * into define mode and adds a coordinate var for the already existing
+ * dim. Or what if the user renames a dim or a coordinate var? In that
+ * case, I need to recreate the dim's dimension scale dataset, and
+ * then I need to go to every var in the file which uses that
+ * dimension, and attach the new dimension scale.
  *
  * @param grp Pointer to group info struct.
  * @param dimid Dimension ID.
@@ -136,21 +137,18 @@ int
 rec_detach_scales(NC_GRP_INFO_T *grp, int dimid, hid_t dimscaleid)
 {
    NC_VAR_INFO_T *var;
-   NC_GRP_INFO_T *child_grp;
    int d, i;
    int retval;
 
    assert(grp && grp->hdr.name && dimid >= 0 && dimscaleid >= 0);
    LOG((3, "%s: grp->hdr.name %s", __func__, grp->hdr.name));
 
-   /* If there are any child groups, detach dimscale there, if needed. */
+   /* If there are any child groups, detach dimscale there, if
+    * needed. */
    for (i = 0; i < ncindexsize(grp->children); i++)
-   {
-      child_grp = (NC_GRP_INFO_T *)ncindexith(grp->children, i);
-      assert(child_grp);
-      if ((retval = rec_detach_scales(child_grp, dimid, dimscaleid)))
+      if ((retval = rec_detach_scales((NC_GRP_INFO_T *)ncindexith(grp->children, i),
+                                      dimid, dimscaleid)))
          return retval;
-   }
 
    /* Find any vars that use this dimension id. */
    for (i = 0; i < ncindexsize(grp->vars); i++)
@@ -164,17 +162,14 @@ rec_detach_scales(NC_GRP_INFO_T *grp, int dimid, hid_t dimscaleid)
       {
          if (var->dimids[d] == dimid && !var->dimscale)
          {
-            LOG((2, "%s: detaching scale for dimid %d to var %s",
-                 __func__, var->dimids[d], var->hdr.name));
-            if (var->created)
+            LOG((2, "%s: detaching scale for dimid %d to var %s", __func__,
+                 var->dimids[d], var->hdr.name));
+            if (var->created && var->dimscale_attached && var->dimscale_attached[d])
             {
-               if (var->dimscale_attached && var->dimscale_attached[d])
-               {
-                  if (H5DSdetach_scale(hdf5_var->hdf_datasetid,
-                                       dimscaleid, d) < 0)
-                     return NC_EHDFERR;
-                  var->dimscale_attached[d] = NC_FALSE;
-               }
+               if (H5DSdetach_scale(hdf5_var->hdf_datasetid,
+                                    dimscaleid, d) < 0)
+                  return NC_EHDFERR;
+               var->dimscale_attached[d] = NC_FALSE;
             }
          }
       }
