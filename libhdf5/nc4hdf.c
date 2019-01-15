@@ -144,9 +144,10 @@ rec_detach_scales(NC_GRP_INFO_T *grp, int dimid, hid_t dimscaleid)
    LOG((3, "%s: grp->hdr.name %s", __func__, grp->hdr.name));
 
    /* If there are any child groups, detach dimscale there, if needed. */
-   for(i=0;i<ncindexsize(grp->children);i++) {
-      child_grp = (NC_GRP_INFO_T*)ncindexith(grp->children,i);
-      if(child_grp == NULL) continue;
+   for (i = 0; i < ncindexsize(grp->children); i++)
+   {
+      child_grp = (NC_GRP_INFO_T *)ncindexith(grp->children, i);
+      assert(child_grp);
       if ((retval = rec_detach_scales(child_grp, dimid, dimscaleid)))
          return retval;
    }

@@ -1080,15 +1080,17 @@ get_attached_info(NC_VAR_INFO_T *var, NC_HDF5_VAR_INFO_T *hdf5_var, int ndims,
    if (num_scales && ndims)
    {
       /* Allocate space to remember whether the dimscale has been
-       * attached for each dimension. */
+       * attached for each dimension, and the HDF5 object IDs of the
+       * scale(s). */
+      assert(!var->dimscale_attached && !hdf5_var->dimscale_hdf5_objids);
       if (!(var->dimscale_attached = calloc(ndims, sizeof(nc_bool_t))))
+         return NC_ENOMEM;
+      if (!(hdf5_var->dimscale_hdf5_objids = malloc(ndims *
+                                                    sizeof(struct hdf5_objid))))
          return NC_ENOMEM;
 
       /* Store id information allowing us to match hdf5 dimscales to
        * netcdf dimensions. */
-      if (!(hdf5_var->dimscale_hdf5_objids = malloc(ndims *
-                                                    sizeof(struct hdf5_objid))))
-         return NC_ENOMEM;
       for (d = 0; d < var->ndims; d++)
       {
          if (H5DSiterate_scales(hdf5_var->hdf_datasetid, d, NULL, dimscale_visitor,

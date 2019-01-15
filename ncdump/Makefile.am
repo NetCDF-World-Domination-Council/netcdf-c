@@ -12,10 +12,11 @@
 # Put together AM_CPPFLAGS and AM_LDFLAGS.
 include $(top_srcdir)/lib_flags.am
 LDADD = ${top_builddir}/liblib/libnetcdf.la
-noinst_PROGRAMS=
-# Note which tests depend on other tests. Necessary for make -j check.
+noinst_PROGRAMS =
+
+# Tell automake that shell scripts are tests.
 TEST_EXTENSIONS = .sh
-XFAIL_TESTS=""
+XFAIL_TESTS = ""
 
 # This is the program we're building, and it's sources.
 bin_PROGRAMS = ncdump

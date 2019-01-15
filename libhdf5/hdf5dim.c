@@ -206,7 +206,6 @@ NC4_inq_dim(int ncid, int dimid, char *name, size_t *lenp)
 int
 NC4_rename_dim(int ncid, int dimid, const char *name)
 {
-   NC *nc;
    NC_GRP_INFO_T *grp;
    NC_DIM_INFO_T *dim;
    NC_HDF5_DIM_INFO_T *hdf5_dim;
@@ -222,9 +221,9 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
         dimid, name));
 
    /* Find info for this file and group, and set pointer to each. */
-   if ((retval = nc4_find_nc_grp_h5(ncid, &nc, &grp, &h5)))
+   if ((retval = nc4_find_grp_h5(ncid, &grp, &h5)))
       return retval;
-   assert(nc && h5 && grp);
+   assert(h5 && grp);
 
    /* Trying to write to a read-only file? No way, Jose! */
    if (h5->no_write)
@@ -262,8 +261,9 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
    if (!(dim->hdr.name = strdup(norm_name)))
       return NC_ENOMEM;
    LOG((3, "dim is now named %s", dim->hdr.name));
-   dim->hdr.hashkey = NC_hashmapkey(dim->hdr.name,strlen(dim->hdr.name)); /* Fix hash key */
 
+   /* Fix hash key and rebuild index. */
+   dim->hdr.hashkey = NC_hashmapkey(dim->hdr.name,strlen(dim->hdr.name));
    if (!ncindexrebuild(grp->dim))
       return NC_EINTERNAL;
 

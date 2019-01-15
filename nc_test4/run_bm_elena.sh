@@ -20,4 +20,8 @@ ${execdir}/bm_file -d -f 3 -o  tst_elena_out.nc -c 0:-1:0:256:64:256 tst_elena_i
 ${execdir}/bm_file -d -f 3 -o  tst_elena_out.nc -c 0:-1:0:256:256:256 tst_elena_int_3D.nc
 echo '*** SUCCESS!!!'
 
+echo ""
+echo "*** Testing the benchmarking program tst_files2..."
+${execdir}/tst_files2
+echo '*** SUCCESS!!!'
 exit 0
