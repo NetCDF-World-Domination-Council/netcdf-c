@@ -1084,8 +1084,8 @@ get_attached_info(NC_VAR_INFO_T *var, NC_HDF5_VAR_INFO_T *hdf5_var, int ndims,
       if (!(var->dimscale_attached = calloc(ndims, sizeof(nc_bool_t))))
          return NC_ENOMEM;
 
-      /* Store id information allowing us to match hdf5
-       * dimscales to netcdf dimensions. */
+      /* Store id information allowing us to match hdf5 dimscales to
+       * netcdf dimensions. */
       if (!(hdf5_var->dimscale_hdf5_objids = malloc(ndims *
                                                     sizeof(struct hdf5_objid))))
          return NC_ENOMEM;
