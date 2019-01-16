@@ -539,7 +539,7 @@ NC4_enddef(int ncid)
    LOG((1, "%s: ncid 0x%x", __func__, ncid));
 
    /* Find pointer to group and nc4_info. */
-   if ((retval = nc4_find_nc_grp_h5(ncid, NULL, &grp, &nc4_info)))
+   if ((retval = nc4_find_grp_h5(ncid, &grp, &nc4_info)))
       return retval;
 
    /* When exiting define mode, mark all variable written. */

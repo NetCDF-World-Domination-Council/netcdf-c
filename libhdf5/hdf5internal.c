@@ -463,7 +463,7 @@ nc4_reform_coord_var(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, NC_DIM_INFO_T *dim)
          }
       } /* next variable dimension */
 
-      /* Release & reset the array tracking attached dimscales */
+      /* Release & reset the array tracking attached dimscales. */
       free(var->dimscale_attached);
       var->dimscale_attached = NULL;
       need_to_reattach_scales++;
@@ -477,8 +477,8 @@ nc4_reform_coord_var(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, NC_DIM_INFO_T *dim)
          BAIL(NC_EHDFERR);
       hdf5_dim->hdf_dimscaleid = 0;
 
-      /* Now delete the dimscale's dataset
-         (it will be recreated later, if necessary) */
+      /* Now delete the dimscale's dataset (it will be recreated
+         later, if necessary) */
       if (H5Gunlink(hdf5_grp->hdf_grpid, dim->hdr.name) < 0)
          return NC_EDIMMETA;
    }
@@ -490,8 +490,8 @@ nc4_reform_coord_var(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, NC_DIM_INFO_T *dim)
    /* Check if this variable used to be a coord. var */
    if (need_to_reattach_scales || (var->was_coord_var && grp != NULL))
    {
-      /* Reattach the scale everywhere it is used. */
-      /* (Recall that netCDF dimscales are always 1-D) */
+      /* Reattach the scale everywhere it is used. (Recall that netCDF
+       * dimscales are always 1-D) */
       if ((retval = rec_reattach_scales(grp->nc4_info->root_grp,
                                         var->dimids[0], hdf5_var->hdf_datasetid)))
          return retval;
@@ -583,7 +583,9 @@ close_vars(NC_GRP_INFO_T *grp)
       /* Delete any HDF5 dimscale objid information. */
       if (hdf5_var->dimscale_hdf5_objids)
          free(hdf5_var->dimscale_hdf5_objids);
+      hdf5_var->dimscale_hdf5_objids = NULL;
 
+      /* Close HDF5 info about attributes of this var. */
       for (a = 0; a < ncindexsize(var->att); a++)
       {
          NC_HDF5_ATT_INFO_T *hdf5_att;

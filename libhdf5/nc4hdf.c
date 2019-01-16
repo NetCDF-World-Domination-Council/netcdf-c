@@ -72,7 +72,6 @@ int
 rec_reattach_scales(NC_GRP_INFO_T *grp, int dimid, hid_t dimscaleid)
 {
    NC_VAR_INFO_T *var;
-   NC_GRP_INFO_T *child_grp;
    int d, i;
    int retval;
 
@@ -81,12 +80,9 @@ rec_reattach_scales(NC_GRP_INFO_T *grp, int dimid, hid_t dimscaleid)
 
    /* If there are any child groups, attach dimscale there, if needed. */
    for (i = 0; i < ncindexsize(grp->children); i++)
-   {
-      child_grp = (NC_GRP_INFO_T*)ncindexith(grp->children, i);
-      assert(child_grp);
-      if ((retval = rec_reattach_scales(child_grp, dimid, dimscaleid)))
+      if ((retval = rec_reattach_scales((NC_GRP_INFO_T *)ncindexith(grp->children, i),
+                                        dimid, dimscaleid)))
          return retval;
-   }
 
    /* Find any vars that use this dimension id. */
    for (i = 0; i < ncindexsize(grp->vars); i++)
