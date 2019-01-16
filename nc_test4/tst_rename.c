@@ -467,7 +467,6 @@ main(int argc, char **argv)
              fmt_names[format]);
       {
          if (create_test_file(file_names[format], formats[format])) ERR;
-         nc_set_log_level(4);
          if (nc_open(file_names[format], NC_WRITE, &ncid)) ERR;
          if (nc_inq_dimid(ncid, ODIM_NAME, &dimid)) ERR;
          if (nc_inq_varid(ncid, OVAR_NAME, &varid)) ERR;

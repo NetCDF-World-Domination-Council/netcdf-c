@@ -1077,12 +1077,14 @@ get_attached_info(NC_VAR_INFO_T *var, NC_HDF5_VAR_INFO_T *hdf5_var, int ndims,
    if (num_scales < 0)
       num_scales = 0;
 
-   if (num_scales && ndims)
+   /* If an enddef has already been called, the dimscales will already
+    * be taken care of. */
+   if (num_scales && ndims && !var->dimscale_attached)
    {
       /* Allocate space to remember whether the dimscale has been
        * attached for each dimension, and the HDF5 object IDs of the
        * scale(s). */
-      assert(!var->dimscale_attached && !hdf5_var->dimscale_hdf5_objids);
+      assert(!hdf5_var->dimscale_hdf5_objids);
       if (!(var->dimscale_attached = calloc(ndims, sizeof(nc_bool_t))))
          return NC_ENOMEM;
       if (!(hdf5_var->dimscale_hdf5_objids = malloc(ndims *
@@ -1178,7 +1180,7 @@ nc4_get_var_meta(NC_VAR_INFO_T *var)
    int retval = NC_NOERR;
 
    assert(var && var->format_var_info);
-   LOG((3, "%s: var %s", var->hdr.name));
+   LOG((3, "%s: var %s", __func__, var->hdr.name));
 
    /* Have we already read the var metadata? */
    if (var->meta_read)

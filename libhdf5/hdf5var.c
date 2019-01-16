@@ -1034,7 +1034,6 @@ NC4_def_var_filter(int ncid, int varid, unsigned int id, size_t nparams,
 int
 NC4_rename_var(int ncid, int varid, const char *name)
 {
-   NC *nc;
    NC_GRP_INFO_T *grp;
    NC_HDF5_GRP_INFO_T *hdf5_grp;
    NC_FILE_INFO_T *h5;
@@ -1047,9 +1046,9 @@ NC4_rename_var(int ncid, int varid, const char *name)
    LOG((2, "%s: ncid 0x%x varid %d name %s", __func__, ncid, varid, name));
 
    /* Find info for this file and group, and set pointer to each. */
-   if ((retval = nc4_find_nc_grp_h5(ncid, &nc, &grp, &h5)))
+   if ((retval = nc4_find_grp_h5(ncid, &grp, &h5)))
       return retval;
-   assert(h5 && grp && grp->format_grp_info && h5);
+   assert(h5 && grp && grp->format_grp_info);
 
    /* Get HDF5-specific group info. */
    hdf5_grp = (NC_HDF5_GRP_INFO_T *)grp->format_grp_info;
@@ -1068,12 +1067,12 @@ NC4_rename_var(int ncid, int varid, const char *name)
       return retval;
 
    /* Get the variable wrt varid */
-   if (!(var = (NC_VAR_INFO_T*)ncindexith(grp->vars,varid)))
+   if (!(var = (NC_VAR_INFO_T *)ncindexith(grp->vars, varid)))
       return NC_ENOTVAR;
 
    /* Check if new name is in use; note that renaming to same name is still an error
       according to the nc_test/test_write.c code. Why?*/
-   if (ncindexlookup(grp->vars,name))
+   if (ncindexlookup(grp->vars, name))
       return NC_ENAMEINUSE;
 
    /* If we're not in define mode, new name must be of equal or
