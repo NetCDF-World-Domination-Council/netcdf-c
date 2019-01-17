@@ -1006,7 +1006,7 @@ var_create_dataset(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, nc_bool_t write_dimid
    /* Always write the hidden coordinates attribute, which lists the
     * dimids of this var. When present, this speeds opens. When no
     * present, dimscale matching is used. */
-   if (var->ndims)
+   if (var->ndims > 1)
        if ((retval = write_coord_dimids(var)))
            BAIL(retval);
 
