@@ -17,7 +17,8 @@
 #include "config.h"
 #include "hdf5internal.h"
 
-#undef DEBUGH5
+/* #undef DEBUGH5 */
+#define DEBUGH5 1
 
 #ifdef DEBUGH5
 /**

@@ -1135,7 +1135,7 @@ get_scale_info(NC_GRP_INFO_T *grp, NC_DIM_INFO_T *dim, NC_VAR_INFO_T *var,
    {
       assert(ndims);
       var->dimscale = NC_TRUE;
-      if (var->ndims > 1)
+      if (var->ndims)
       {
          if ((retval = read_coord_dimids(grp, var)))
             return retval;
