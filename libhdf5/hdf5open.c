@@ -1135,6 +1135,9 @@ get_scale_info(NC_GRP_INFO_T *grp, NC_DIM_INFO_T *dim, NC_VAR_INFO_T *var,
    {
       assert(ndims);
       var->dimscale = NC_TRUE;
+
+      /* If this is a multi-dimensional coordinate var, then the
+       * dimids must be stored in the hidden coordinates attribute. */
       if (var->ndims > 1)
       {
          if ((retval = read_coord_dimids(grp, var)))
@@ -1142,6 +1145,7 @@ get_scale_info(NC_GRP_INFO_T *grp, NC_DIM_INFO_T *dim, NC_VAR_INFO_T *var,
       }
       else
       {
+         /* This is a 1-dimensional coordinate var. */
          assert(!strcmp(var->hdr.name, dim->hdr.name));
          var->dimids[0] = dim->hdr.id;
          var->dim[0] = dim;
