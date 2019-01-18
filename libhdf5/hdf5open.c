@@ -337,6 +337,8 @@ dimscale_visitor(hid_t did, unsigned dim, hid_t dsid,
 {
    H5G_stat_t statbuf;
 
+   LOG((4, "%s", __func__));
+
    /* Get more info on the dimscale object.*/
    if (H5Gget_objinfo(dsid, ".", 1, &statbuf) < 0)
       return -1;
@@ -1070,12 +1072,15 @@ get_attached_info(NC_VAR_INFO_T *var, NC_HDF5_VAR_INFO_T *hdf5_var, int ndims,
    int d;
    int num_scales = 0;
 
+   LOG((4, "%s ndims %d datasetid %ld", __func__, ndims, datasetid));
+
    /* Find out how many scales are attached to this
     * dataset. H5DSget_num_scales returns an error if there are no
     * scales, so convert a negative return value to zero. */
    num_scales = H5DSget_num_scales(datasetid, 0);
    if (num_scales < 0)
       num_scales = 0;
+   LOG((4, "num_scales %d", num_scales));
 
    /* If an enddef has already been called, the dimscales will already
     * be taken care of. */
@@ -1095,10 +1100,12 @@ get_attached_info(NC_VAR_INFO_T *var, NC_HDF5_VAR_INFO_T *hdf5_var, int ndims,
        * netcdf dimensions. */
       for (d = 0; d < var->ndims; d++)
       {
+         LOG((4, "about to iterate scales for dim %d", d));
          if (H5DSiterate_scales(hdf5_var->hdf_datasetid, d, NULL, dimscale_visitor,
                                 &(hdf5_var->dimscale_hdf5_objids[d])) < 0)
             return NC_EHDFERR;
          var->dimscale_attached[d] = NC_TRUE;
+         LOG((4, "dimscale attached"));
       }
    }
 
