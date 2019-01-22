@@ -1071,13 +1071,14 @@ NC4_rename_var(int ncid, int varid, const char *name)
    if (!(var = (NC_VAR_INFO_T *)ncindexith(grp->vars, varid)))
       return NC_ENOTVAR;
 
-   /* Check if new name is in use; note that renaming to same name is still an error
-      according to the nc_test/test_write.c code. Why?*/
+   /* Check if new name is in use; note that renaming to same name is
+      still an error according to the nc_test/test_write.c
+      code. Why? */
    if (ncindexlookup(grp->vars, name))
       return NC_ENAMEINUSE;
 
-   /* If we're not in define mode, new name must be of equal or
-      less size, if strict nc3 rules are in effect for this . */
+   /* If we're not in define mode, new name must be of equal or less
+      size, if strict nc3 rules are in effect for this . */
    if (!(h5->flags & NC_INDEF) && strlen(name) > strlen(var->hdr.name) &&
        (h5->cmode & NC_CLASSIC_MODEL))
       return NC_ENOTINDEFINE;

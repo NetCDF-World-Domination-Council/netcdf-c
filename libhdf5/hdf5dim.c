@@ -211,6 +211,7 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
    NC_HDF5_DIM_INFO_T *hdf5_dim;
    NC_FILE_INFO_T *h5;
    char norm_name[NC_MAX_NAME + 1];
+   int def_mode;
    int retval;
 
    /* Note: name is new name */
@@ -224,6 +225,9 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
    if ((retval = nc4_find_grp_h5(ncid, &grp, &h5)))
       return retval;
    assert(h5 && grp);
+
+   /* Remember if we are in define mode. */
+   def_mode = h5->flags & NC_INDEF;
 
    /* Trying to write to a read-only file? No way, Jose! */
    if (h5->no_write)
@@ -242,6 +246,12 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
    /* Check if new name is in use. */
    if (ncindexlookup(grp->dim, norm_name))
       return NC_ENAMEINUSE;
+
+   /* If we're not in define mode, new name must be of equal or less
+      size, if strict nc3 rules are in effect for this . */
+   if (!(h5->flags & NC_INDEF) && strlen(name) > strlen(dim->hdr.name) &&
+       (h5->cmode & NC_CLASSIC_MODEL))
+      return NC_ENOTINDEFINE;
 
    /* Check for renaming dimension w/o variable. */
    if (hdf5_dim->hdf_dimscaleid)
@@ -298,6 +308,18 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
             return retval;
       }
    }
+
+   /* Sync HDF5 file to disk. */
+   if (def_mode)
+   {
+      if ((retval = nc_enddef(ncid)))
+         return retval;
+      if ((retval = nc_redef(ncid)))
+         return retval;
+   }
+   else
+      if ((retval = nc_sync(ncid)))
+         return retval;
 
    return NC_NOERR;
 }

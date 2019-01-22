@@ -519,12 +519,17 @@ main(int argc, char **argv)
       if (nc_inq_dimid(ncid, "lon", &lon_dim)) ERR;
 
       /* THese won't work due to bad params. */
-      if (nc_rename_dim(ncid + MILLION, lon_dim, "longitude") != NC_EBADID) ERR;
-      if (nc_rename_dim(ncid + TEST_VAL_42, lon_dim, "longitude") != NC_EBADID) ERR;
+      if (nc_rename_dim(ncid + MILLION, lon_dim, "lo") != NC_EBADID) ERR;
+      if (nc_rename_dim(ncid + TEST_VAL_42, lon_dim, "lo") != NC_EBADID) ERR;
       if (nc_rename_dim(ncid, lon_dim, NULL) != NC_EINVAL) ERR;
 
-      /* rename dimension */
-      if (nc_rename_dim(ncid, lon_dim, "longitude")) ERR;
+      /* This won't work because name is longer than old name, we are
+       * using classic mode, and we are not in define mode. */
+      if (nc_rename_dim(ncid, lon_dim, "longitude") != NC_ENOTINDEFINE) ERR;
+
+      /* Now rename the dim. We are not in define mode, so name must
+       * be shorter than original name. */
+      if (nc_rename_dim(ncid, lon_dim, "lo")) ERR;
 
       /* These will fail due to bad params. */
       if (nc_inq_varid(ncid + MILLION, "temp", &wind_id) != NC_EBADID) ERR;
