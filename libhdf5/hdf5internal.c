@@ -498,7 +498,7 @@ nc4_reform_coord_var(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var, NC_DIM_INFO_T *dim)
       /* Set state transition indicator (cancels earlier transition) */
       var->was_coord_var = NC_FALSE;
    }
-   else
+   /* else */
       /* Set state transition indicator */
       var->became_coord_var = NC_TRUE;
 

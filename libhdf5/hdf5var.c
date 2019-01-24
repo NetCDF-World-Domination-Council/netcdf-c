@@ -1039,6 +1039,8 @@ NC4_rename_var(int ncid, int varid, const char *name)
    NC_HDF5_GRP_INFO_T *hdf5_grp;
    NC_FILE_INFO_T *h5;
    NC_VAR_INFO_T *var;
+   int def_mode;
+   int do_sync = 0;
    int retval = NC_NOERR;
 
    if (!name)
@@ -1050,6 +1052,9 @@ NC4_rename_var(int ncid, int varid, const char *name)
    if ((retval = nc4_find_grp_h5(ncid, &grp, &h5)))
       return retval;
    assert(h5 && grp && grp->format_grp_info);
+
+   /* Remember if we are in define mode. */
+   def_mode = h5->flags & NC_INDEF;
 
    /* Get HDF5-specific group info. */
    hdf5_grp = (NC_HDF5_GRP_INFO_T *)grp->format_grp_info;
@@ -1109,7 +1114,7 @@ NC4_rename_var(int ncid, int varid, const char *name)
 
       LOG((3, "Moving dataset %s to %s", var->hdr.name, name));
       if (H5Gmove(hdf5_grp->hdf_grpid, var->hdr.name, name) < 0)
-         BAIL(NC_EHDFERR);
+         return NC_EHDFERR;
    }
 
    /* Now change the name in our metadata. */
@@ -1127,9 +1132,10 @@ NC4_rename_var(int ncid, int varid, const char *name)
     * are different now */
    if (var->dimscale && strcmp(var->hdr.name, var->dim[0]->hdr.name))
    {
-      /* Break up the coordinate variable */
+      /* Break up the coordinate variable. */
       if ((retval = nc4_break_coord_var(grp, var, var->dim[0])))
          return retval;
+      do_sync++;
    }
 
    /* Check if this should become a coordinate variable. */
@@ -1154,11 +1160,26 @@ NC4_rename_var(int ncid, int varid, const char *name)
             if ((retval = nc4_reform_coord_var(grp, var, dim)))
                return retval;
             var->became_coord_var = NC_TRUE;
+            do_sync++;
          }
       }
    }
 
-exit:
+   if (do_sync)
+   {
+      /* /\* Sync HDF5 file to disk. *\/ */
+      /* if (def_mode) */
+      /* { */
+      /*    if ((retval = nc_enddef(ncid))) */
+      /*       return retval; */
+      /*    if ((retval = nc_redef(ncid))) */
+      /*       return retval; */
+      /* } */
+      /* else */
+      /*    if ((retval = nc_sync(ncid))) */
+      /*       return retval; */
+   }
+
    return retval;
 }
 

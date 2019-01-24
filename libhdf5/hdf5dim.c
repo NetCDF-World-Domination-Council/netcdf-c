@@ -310,16 +310,16 @@ NC4_rename_dim(int ncid, int dimid, const char *name)
    }
 
    /* Sync HDF5 file to disk. */
-   if (def_mode)
-   {
-      if ((retval = nc_enddef(ncid)))
-         return retval;
-      if ((retval = nc_redef(ncid)))
-         return retval;
-   }
-   else
-      if ((retval = nc_sync(ncid)))
-         return retval;
+   /* if (def_mode) */
+   /* { */
+   /*    if ((retval = nc_enddef(ncid))) */
+   /*       return retval; */
+   /*    if ((retval = nc_redef(ncid))) */
+   /*       return retval; */
+   /* } */
+   /* else */
+   /*    if ((retval = nc_sync(ncid))) */
+   /*       return retval; */
 
    return NC_NOERR;
 }

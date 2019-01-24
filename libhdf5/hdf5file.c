@@ -213,7 +213,7 @@ sync_netcdf4_file(NC_FILE_INFO_T *h5)
          return retval;
 
       /* Write out _NCProperties */
-      if((retval = NC4_write_ncproperties(h5)))
+      if ((retval = NC4_write_ncproperties(h5)))
 	return retval;
    }
 

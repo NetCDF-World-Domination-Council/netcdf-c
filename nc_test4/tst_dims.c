@@ -298,10 +298,10 @@ main(int argc, char **argv)
    SUMMARIZE_ERR;
    printf("*** Testing renaming dimensions and vars...");
    {
-#define FILE_NAME1 "foo1.nc"
-#define FILE_NAME2 "foo2.nc"
-#define FILE_NAME3 "foo3.nc"
-#define FILE_NAME4 "foo4.nc"
+#define FILE_NAME1 "tst_dims_foo1.nc"
+#define FILE_NAME2 "tst_dims_foo2.nc"
+#define FILE_NAME3 "tst_dims_foo3.nc"
+#define FILE_NAME4 "tst_dims_foo4.nc"
 #define DIM_NAME "lat_T42"
 #define VAR_NAME DIM_NAME
 #define DIM_NAME2 "lat"
@@ -420,10 +420,12 @@ main(int argc, char **argv)
 
 
       /* reopen file, rename associated variable and then coordinate dimension */
+      nc_set_log_level(4);
       if (nc_open(FILE_NAME1, NC_WRITE, &ncid)) ERR;
       if (nc_inq_dimid(ncid, DIM_NAME, &dimid)) ERR;
       if (nc_inq_varid(ncid, VAR_NAME, &varid)) ERR;
       if (nc_rename_var(ncid, varid, VAR_NAME2)) ERR;
+      /* if (nc_sync(ncid)) ERR; */
       if (nc_rename_dim(ncid, dimid, DIM_NAME2)) ERR;
       if (nc_close(ncid)) ERR;
 
