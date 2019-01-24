@@ -1167,17 +1167,17 @@ NC4_rename_var(int ncid, int varid, const char *name)
 
    if (do_sync)
    {
-      /* /\* Sync HDF5 file to disk. *\/ */
-      /* if (def_mode) */
-      /* { */
-      /*    if ((retval = nc_enddef(ncid))) */
-      /*       return retval; */
-      /*    if ((retval = nc_redef(ncid))) */
-      /*       return retval; */
-      /* } */
-      /* else */
-      /*    if ((retval = nc_sync(ncid))) */
-      /*       return retval; */
+      /* Sync HDF5 file to disk. */
+      if (def_mode)
+      {
+         if ((retval = nc_enddef(ncid)))
+            return retval;
+         if ((retval = nc_redef(ncid)))
+            return retval;
+      }
+      else
+         if ((retval = nc_sync(ncid)))
+            return retval;
    }
 
    return retval;
