@@ -215,7 +215,7 @@ main(int argc, char **argv)
       /* Sync to disk. Now the file has one dim and one var. The dim
        * is a dimscale only dataset, and the var is a dataset with a
        * dimscale attached pointing to the dim. */
-      /* if (nc_sync(ncid)) ERR; */
+      if (nc_sync(ncid)) ERR;
       if (nc_close(ncid)) ERR;
       if (nc_open(file_name, NC_WRITE, &ncid)) ERR;
       /* Now rename the dim to the same name as the var. After this
