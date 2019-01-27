@@ -1039,6 +1039,7 @@ NC4_rename_var(int ncid, int varid, const char *name)
    NC_HDF5_GRP_INFO_T *hdf5_grp;
    NC_FILE_INFO_T *h5;
    NC_VAR_INFO_T *var;
+   NC_DIM_INFO_T *other_dim;
    int retval = NC_NOERR;
 
    if (!name)
@@ -1081,6 +1082,15 @@ NC4_rename_var(int ncid, int varid, const char *name)
    if (!(h5->flags & NC_INDEF) && strlen(name) > strlen(var->hdr.name) &&
        (h5->cmode & NC_CLASSIC_MODEL))
       return NC_ENOTINDEFINE;
+
+   /* Is there a dim without a variable with this name, which is not
+    * the dim of this coord var? If so, this is a non-coord var with
+    * the same name as a dim defined after that dim. The HDF5 dataset
+    * created to hold the var-less dimension must be renamed, or HDF5
+    * will not be able to copy this var to that name. */
+   if ((other_dim = (NC_DIM_INFO_T *)ncindexlookup(grp->dim, name)) &&
+       strcmp(name, var->dim[0]->hdr.name))
+      return NC_ENAMEINUSE;
 
    /* Change the HDF5 file, if this var has already been created
       there. */
