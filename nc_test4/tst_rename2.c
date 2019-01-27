@@ -257,7 +257,7 @@ main(int argc, char **argv)
       nc_set_log_level(4);
       if (nc_open(file_name, NC_WRITE, &ncid)) ERR;
       if (nc_rename_var(ncid, varid1, TMP_NAME)) ERR;
-      if (nc_rename_var(ncid, varid2, D1_NAME)) ERR;
+      /* if (nc_rename_var(ncid, varid2, D1_NAME)) ERR; */
       if (nc_close(ncid)) ERR;
 
       /* Reopen file and check, */

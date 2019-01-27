@@ -221,6 +221,34 @@ nc4_find_default_chunksizes2(NC_GRP_INFO_T *grp, NC_VAR_INFO_T *var)
 }
 
 /**
+ * @internal Give a var a secret HDF5 name.
+ *
+ * @param var Pointer to var info.
+ * @param name Non-secret name. Should already be UTF8 normalized.
+ *
+ * @returns ::NC_NOERR No error.
+ * @returns ::NC_EMAXNAME Name too long to fit secret prefix.
+ * @returns ::NC_ENOMEM Out of memory.
+ * @author Ed Hartnett
+ */
+static int
+give_var_secret_name(NC_VAR_INFO_T *var, const char *name)
+{
+   /* Set a different hdf5 name for this variable to avoid name
+    * clash. */
+   if (strlen(name) + strlen(NON_COORD_PREPEND) > NC_MAX_NAME)
+      return NC_EMAXNAME;
+   if (!(var->hdf5_name = malloc((strlen(NON_COORD_PREPEND) +
+                                  strlen(name) + 1) * sizeof(char))))
+      return NC_ENOMEM;
+
+   sprintf(var->hdf5_name, "%s%s", NON_COORD_PREPEND, name);
+
+   return NC_NOERR;
+}
+
+
+/**
  * @internal This is called when a new netCDF-4 variable is defined
  * with nc_def_var().
  *
@@ -500,19 +528,10 @@ NC4_def_var(int ncid, const char *name, nc_type xtype,
     * is not a coordinate variable. I need to change its HDF5 name,
     * because the dimension will cause a HDF5 dataset to be created,
     * and this var has the same name. */
-   dim = (NC_DIM_INFO_T*)ncindexlookup(grp->dim,norm_name);
+   dim = (NC_DIM_INFO_T *)ncindexlookup(grp->dim, norm_name);
    if (dim && (!var->ndims || dimidsp[0] != dim->hdr.id))
-   {
-      /* Set a different hdf5 name for this variable to avoid name
-       * clash. */
-      if (strlen(norm_name) + strlen(NON_COORD_PREPEND) > NC_MAX_NAME)
-         BAIL(NC_EMAXNAME);
-      if (!(var->hdf5_name = malloc((strlen(NON_COORD_PREPEND) +
-                                     strlen(norm_name) + 1) * sizeof(char))))
-         BAIL(NC_ENOMEM);
-
-      sprintf(var->hdf5_name, "%s%s", NON_COORD_PREPEND, norm_name);
-   }
+      if ((retval = give_var_secret_name(var, norm_name)))
+         BAIL(retval);
 
    /* If this is a coordinate var, it is marked as a HDF5 dimension
     * scale. (We found dim above.) Otherwise, allocate space to
@@ -1090,7 +1109,8 @@ NC4_rename_var(int ncid, int varid, const char *name)
     * will not be able to copy this var to that name. */
    if ((other_dim = (NC_DIM_INFO_T *)ncindexlookup(grp->dim, name)) &&
        strcmp(name, var->dim[0]->hdr.name))
-      return NC_ENAMEINUSE;
+      if ((retval = give_var_secret_name(var, name)))
+         return retval;
 
    /* Change the HDF5 file, if this var has already been created
       there. */
