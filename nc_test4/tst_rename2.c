@@ -34,6 +34,9 @@ See \ref copyright file for more info.
 #define NDIM1 1
 #define NDIM3 3
 #define NUM_ENDDEF_SETTINGS 2
+#define D1_NAME "d1"
+#define D2_NAME "d2"
+#define TMP_NAME "t1"
 
 int
 main(int argc, char **argv)
@@ -232,6 +235,39 @@ main(int argc, char **argv)
       if (strcmp(name, DIM_NAME_END)) ERR;
       if (nc_inq_varname(ncid, varid, name)) ERR;
       if (strcmp(name, VAR_NAME_END)) ERR;
+      if (nc_close(ncid)) ERR;
+   }
+   SUMMARIZE_ERR;
+   fprintf(stderr,"*** test renaming two coord vars...");
+   {
+      int ncid, dimid1, dimid2, varid1, varid2;
+      char file_name[NC_MAX_NAME + 1];
+      char name[NC_MAX_NAME + 1];
+
+      /* Create file with dim and associated coordinate var. */
+      sprintf(file_name, "%s_sync.nc", TEST_NAME);
+      if (nc_create(file_name, NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &ncid)) ERR;
+      if (nc_def_dim(ncid, D1_NAME, DIM1_LEN, &dimid1)) ERR;
+      if (nc_def_dim(ncid, D2_NAME, DIM1_LEN, &dimid2)) ERR;
+      if (nc_def_var(ncid, D1_NAME, NC_INT, NDIM1, &dimid1, &varid1)) ERR;
+      if (nc_def_var(ncid, D2_NAME, NC_INT, NDIM1, &dimid2, &varid2)) ERR;
+      if (nc_close(ncid)) ERR;
+
+      /* Open the file and rename the vars. */
+      nc_set_log_level(4);
+      if (nc_open(file_name, NC_WRITE, &ncid)) ERR;
+      if (nc_rename_var(ncid, varid1, TMP_NAME)) ERR;
+      if (nc_rename_var(ncid, varid2, D1_NAME)) ERR;
+      if (nc_close(ncid)) ERR;
+
+      /* Reopen file and check, */
+      if (nc_open(file_name, NC_WRITE, &ncid)) ERR;
+      /* if (nc_inq_dimid(ncid, DIM_NAME_END, &dimid)) ERR; */
+      /* if (nc_inq_varid(ncid, VAR_NAME_END, &varid)) ERR; */
+      /* if (nc_inq_dimname(ncid, dimid, name)) ERR; */
+      /* if (strcmp(name, DIM_NAME_END)) ERR; */
+      /* if (nc_inq_varname(ncid, varid, name)) ERR; */
+      /* if (strcmp(name, VAR_NAME_END)) ERR; */
       if (nc_close(ncid)) ERR;
    }
    SUMMARIZE_ERR;
